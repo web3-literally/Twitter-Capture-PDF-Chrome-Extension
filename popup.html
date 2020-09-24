@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Twitter Capture Panel</title>
+
+    <style>
+        body {
+            width: 300px;
+            padding: 10px;
+        }
+        
+        #btn-start-capture {
+            margin-left: auto;
+        }
+        
+        .container div {
+            margin-top: 10px;
+        }
+        
+        .alert-warning {
+            color: red;
+        }
+    </style>
+
+    <link rel="stylesheet" href="resources/bootstrap/css/bootstrap.min.css">
+    <script src="resources/jquery/jquery.min.js"></script>
+    <script src="resources/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="popup.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <label class="col-4">User ID : </label>
+            <input class="col-8" type="text" placeholder="Please Iput User ID." id="user-id">
+        </div>
+        <div class="row">
+            <label class="col-4">From : </label>
+            <input class="col-8" type="date" id="from-date">
+        </div>
+        <div class="row">
+            <label class="col-4">To : </label>
+            <input class="col-8" type="date" id="to-date">
+        </div>
+        <div class="row input-warning d-none">
+            <p class="alert-danger">Please input all field correctly.</p>
+        </div>
+        <div class="row">
+            <button class="btn btn-success" id="btn-start-capture">Start Capture</button>
+        </div>
+    </div>
+</body>
+
+</html>

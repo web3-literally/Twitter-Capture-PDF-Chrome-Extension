@@ -1,0 +1,50 @@
+{
+    "name": "Twitter Capture",
+    "description": "Capture Tweet for users and export with pdf document.",
+    "version": "1.0",
+    "permissions": [
+        "https://twitter.com/*",
+        "activeTab",
+        "tabs",
+        "storage"
+    ],
+    "browser_action": {
+        "default_title": "Twitter Capture.",
+        "default_icon": {
+            "16": "resources/images/icon.png",
+            "32": "resources/images/icon.png",
+            "48": "resources/images/icon.png",
+            "128": "resources/images/icon.png"
+        },
+        "default_popup": "popup.html",
+        "matches": [
+            "https://twitter.com/*",
+            "https://www.twitter.com/*"
+        ]
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "icons": {
+        "16": "resources/images/icon.png",
+        "32": "resources/images/icon.png",
+        "48": "resources/images/icon.png",
+        "128": "resources/images/icon.png"
+    },
+    "manifest_version": 2,
+    "content_scripts": [{
+        "all_frames": false,
+        "js": [
+            "resources/jquery/jquery.js",
+            "resources/dom-to-image.min.js",
+            "resources/jsPDF/jspdf.min.js",
+            "contentScript.js"
+        ],
+        "matches": [
+            "https://twitter.com/*"
+        ]
+    }],
+    "web_accessible_resources": ["resources/injection.css"]
+}
