@@ -3,23 +3,89 @@
 
 <head>
     <title>Twitter Capture Panel</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
         body {
-            width: 300px;
+            width: 800px;
             padding: 10px;
         }
         
-        #btn-start-capture {
+        #btn-add {
             margin-left: auto;
+            margin-right: auto;
+            min-width: 150px;
         }
         
-        .container div {
-            margin-top: 10px;
+        .input-warning,
+        .input-information {
+            font-size: medium;
         }
         
-        .alert-warning {
-            color: red;
+        .account-detail {
+            padding: 15px;
+            border-right: solid 1px #CDCDCD;
+            font-size: small;
+        }
+        
+        .shedule-list {
+            padding: 15px;
+        }
+        
+        .active-layout img {
+            background-color: gainsboro;
+        }
+        
+        .tab-content {
+            font-size: x-small;
+            text-align: center;
+            max-height: 350px;
+            min-height: 350px;
+            overflow: auto;
+        }
+        
+        .rcorners {
+            border-radius: 5px;
+            border: 1px solid #CDCDCD;
+        }
+        
+        .color-gray {
+            color: gray;
+        }
+        
+        .btn-info {
+            background-color: #6FD4C5 !important;
+        }
+        
+        .btn-outline-info:not(:disabled):not(.disabled).active,
+        .btn-outline-info:not(:disabled):not(.disabled):active,
+        .show>.btn-outline-info.dropdown-toggle {
+            color: #fff !important;
+            background-color: #6FD4C5 !important;
+            border-color: #6FD4C5 !important;
+        }
+        
+        .btn-outline-info {
+            color: #6FD4C5 !important;
+            border-color: #6FD4C5 !important;
+        }
+        /* th {
+            font-weight: normal;
+        } */
+        
+        .widget_imperfect_quote h3.widget-title {
+            background-clip: padding-box;
+            background-color: black;
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-radius: 10px 10px 10px 10px;
+            padding: 10px;
+            width: 60%;
+        }
+        
+        .remove-process,
+        .remove-daily-account {
+            font-size: x-small !important;
         }
     </style>
 
@@ -33,22 +99,297 @@
 <body>
     <div class="container">
         <div class="row">
-            <label class="col-4">User ID : </label>
-            <input class="col-8" type="text" placeholder="Please Iput User ID." id="user-id">
-        </div>
-        <div class="row">
-            <label class="col-4">From : </label>
-            <input class="col-8" type="date" id="from-date">
-        </div>
-        <div class="row">
-            <label class="col-4">To : </label>
-            <input class="col-8" type="date" id="to-date">
-        </div>
-        <div class="row input-warning d-none">
-            <p class="alert-danger">Please input all field correctly.</p>
-        </div>
-        <div class="row">
-            <button class="btn btn-success" id="btn-start-capture">Start Capture</button>
+            <div class="col-5 account-detail">
+                <div class="mt-3">
+                    <strong>Account Name</strong>
+                    <input type="text" class="w-100 rcorners mt-1  color-gray" placeholder="Account Name" id="account-name">
+                </div>
+                <div class="mt-4" id="period">
+                    <strong>Period</strong>
+                    <div class="row mt-1">
+                        <div class="col-6">
+                            <div class="color-gray">From</div>
+                            <div>
+                                <input class="w-100 rcorners color-gray" type="date" id="from-date" value="2020-01-01">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="color-gray">Until</div>
+                            <div>
+                                <input class="w-100 rcorners color-gray" type="date" id="until-date" value="2020-01-01">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 checkbox color-gray">
+                    <input type="checkbox" id="auto-capture">
+                    <label for="auto-capture">Daily Automatic Capturing</label>
+                </div>
+                <div class="mt-4">
+                    <strong>PDF Layout</strong>
+                    <div class="row mt-3">
+                        <input type="hidden" id="layout-index" value="1">
+                        <div class="col-3 pdf-layout active-layout" layout-index="1">
+                            <img src="resources/images/Layout-1.png">
+                        </div>
+                        <div class="col-3 pdf-layout" layout-index="2">
+                            <img src="resources/images/Layout-2.png">
+                        </div>
+                        <div class="col-3 pdf-layout" layout-index="3">
+                            <img src="resources/images/Layout-3.png">
+                        </div>
+                        <div class="col-3 pdf-layout" layout-index="4">
+                            <img src="resources/images/Layout-4.png">
+                        </div>
+                    </div>
+                </div>
+                <div class="input-warning d-none mt-3">
+                    <p class="alert-danger">Please input all field correctly.</p>
+                </div>
+                <div class="input-information d-none mt-3">
+                    <p class="alert-success">Success.</p>
+                </div>
+                <div class="row mt-4">
+                    <button class="btn btn-sm btn-info" id="btn-add">Add</button>
+                </div>
+            </div>
+            <div class="col-7 shedule-list container">
+                <ul class="nav nav-tabs">
+                    <li class="w-50"><button class="btn btn-sm btn-outline-info w-100 active" data-toggle="tab" href="#process">Process</button></li>
+                    <li class="w-50"><button class="btn btn-sm btn-outline-info w-100" data-toggle="tab" href="#daily-account">Daily Account</button></li>
+                </ul>
+
+                <div class="tab-content mt-3 rcorners">
+                    <div id="process" class="tab-pane fade in active show">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <th>Period</th>
+                                    <th>Progress</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="process-content" style="color: grey;">
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>90%</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.01.11 ~ 2020.09.23</td>
+
+                                    <td>Waiting</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="daily-account" class="tab-pane fade">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Account Name</th>
+                                    <th>Lastest Capture</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-account-content" style="color: grey;">
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td>@aabbcc</td>
+                                    <td>2020.09.23</td>
+
+                                    <td><button class="btn btn-sm btn-dark py-0"><span aria-hidden="true">&times;</span> Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

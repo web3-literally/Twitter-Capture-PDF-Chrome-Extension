@@ -43,7 +43,7 @@
             "contentScript.js"
         ],
         "matches": [
-            "https://twitter.com/*"
+            "https://twitter.com/search?q=from:*%20since:*%20until:*&src=typed_query&f=live"
         ]
     }],
     "web_accessible_resources": ["resources/injection.css"]
