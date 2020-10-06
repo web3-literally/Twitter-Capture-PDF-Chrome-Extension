@@ -3,8 +3,6 @@
     "description": "Capture Tweet for users and export with pdf document.",
     "version": "1.0",
     "permissions": [
-        "https://twitter.com/*",
-        "activeTab",
         "tabs",
         "storage"
     ],
@@ -16,11 +14,7 @@
             "48": "resources/images/icon.png",
             "128": "resources/images/icon.png"
         },
-        "default_popup": "popup.html",
-        "matches": [
-            "https://twitter.com/*",
-            "https://www.twitter.com/*"
-        ]
+        "default_popup": "popup.html"
     },
     "background": {
         "scripts": [
