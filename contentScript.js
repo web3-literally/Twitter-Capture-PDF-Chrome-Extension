@@ -2,6 +2,8 @@
 
 var layout_index = 1;
 var image_index = 0;
+var total_index = 0;
+var scroll_YOffest = 0;
 var port = chrome.runtime.connect({ name: "Process_Connection" });
 
 let ele = document.createElement('link');
@@ -12,7 +14,7 @@ document.body.appendChild(ele);
 let alert = document.createElement('div');
 alert.id = 'tweet-capture-pending';
 alert.className = 'init';
-alert.innerHTML = 'The twitter is capturing now. Please wait for a while.';
+alert.innerHTML = 'Getting the captures. Please wait for a while.';
 document.body.appendChild(alert);
 
 
@@ -99,10 +101,12 @@ async function startCapture(user_id, from_date, to_date) {
         var articles = $('article');
         var article_count = articles.length;
         var saved_index = 0;
+        var article_total_height = 0;
         for (var article of articles) {
+            var article_id = 0;
             try {
                 var pieces = $(article).find("a[href*='/status/']").attr("href").split("/");
-                var article_id = pieces[pieces.length - 1];
+                article_id = pieces[pieces.length - 1];
                 if (article_id_list.includes(article_id)) {
                     saved_index++;
                     continue;
@@ -110,10 +114,14 @@ async function startCapture(user_id, from_date, to_date) {
             } catch (error) {
                 console.log(error);
             }
-            article_id_list.push(article_id);
+
+            if (article_id) article_id_list.push(article_id);
+
+            total_index++;
+            // console.log(total_index);
+            article_total_height += $(article).height();
 
             await domtoimage.toPng(article).then(function(imgData) {
-                var h1 = 10;
                 var dimensions = getPngDimensions(imgData);
                 var image_width = 0;
                 var image_height = 0;
@@ -237,9 +245,15 @@ async function startCapture(user_id, from_date, to_date) {
         }
 
         scrollHeight = document.body.scrollHeight;
-        window.scrollTo(0, scrollHeight);
+        // if (article_total_height > 0)
+        //     scroll_YOffest += article_total_height;
+        // else
+        //     scroll_YOffest += document.body.clientHeight;
+        scroll_YOffest += document.body.clientHeight;
+
+        window.scrollTo(0, scroll_YOffest);
         await sleep(5000);
-        if (scrollHeight == document.body.scrollHeight) {
+        if (scroll_YOffest >= scrollHeight && scrollHeight == document.body.scrollHeight) {
             doc.save(`Twitter-Capture-${user_id}-${from_date}-${to_date}.pdf`);
             doc = new jsPDF("p", "pt", "a3");
             alert.className = '';

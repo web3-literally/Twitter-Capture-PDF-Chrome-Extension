@@ -65,7 +65,7 @@ function StartProcess() {
 
         chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
             var searchUrl = "https://twitter.com/search?q=from:" + account_name + "%20since:" + from_date + "%20until:" + until_date + "&src=typed_query&f=live";
-            chrome.tabs.create({ url: searchUrl, active: true }, tab => {
+            chrome.windows.create({ url: searchUrl, width: 200, height: 165, focused: false }, window => {
                 PROCESS_STATUS = 1;
                 CURRENT_PROCESS_ID = process_id;
                 var payload = {
@@ -77,7 +77,7 @@ function StartProcess() {
                     layout_index: layout_index
                 }
                 setTimeout(function() {
-                    chrome.tabs.sendMessage(tab.id, payload);
+                    chrome.tabs.sendMessage(window.tabs[0].id, payload);
                     console.log(`Started New Process Successfully! ID: ${CURRENT_PROCESS_ID}`);
                 }, 3000);
             });
