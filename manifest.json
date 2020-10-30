@@ -7,7 +7,7 @@
     "permissions": [
         "tabs",
         "storage",
-        "http://localhost:4242/"
+        "http://52.68.239.201/"
     ],
     "browser_action": {
         "default_title": "Twitter Capture.",

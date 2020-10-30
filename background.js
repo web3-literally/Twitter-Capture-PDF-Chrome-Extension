@@ -1,7 +1,7 @@
 var PROCESS_STATUS = 0; // 0: FREE, 1: WORKING
 var PING_COUNT = 0;
 var CURRENT_PROCESS_ID = 0;
-var PAYMENT_URL = "http://localhost:4242";
+var PAYMENT_URL = "http://52.68.239.201";
 
 function AddProcessFromDailySchedule() {
     chrome.storage.sync.get('twitter_capture_daily_account', function (result) {

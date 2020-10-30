@@ -1,6 +1,6 @@
 'use strict';
 
-var PAYMENT_URL = "http://localhost:4242";
+var PAYMENT_URL = "http://52.68.239.201";
 
 function showWarning(strMsg) {
     $('.input-warning').removeClass('d-none');
