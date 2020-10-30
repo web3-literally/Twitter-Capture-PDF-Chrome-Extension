@@ -1,16 +1,17 @@
 var PROCESS_STATUS = 0; // 0: FREE, 1: WORKING
 var PING_COUNT = 0;
 var CURRENT_PROCESS_ID = 0;
+var PAYMENT_URL = "http://localhost:4242";
 
 function AddProcessFromDailySchedule() {
-    chrome.storage.sync.get('twitter_capture_daily_account', function(result) {
+    chrome.storage.sync.get('twitter_capture_daily_account', function (result) {
         var daily_account_list = result['twitter_capture_daily_account'];
         if (!daily_account_list) {
             daily_account_list = [];
         }
 
 
-        chrome.storage.sync.get('twitter_capture_process', function(result) {
+        chrome.storage.sync.get('twitter_capture_process', function (result) {
             var process_list = result['twitter_capture_process'];
             if (!process_list) {
                 process_list = [];
@@ -38,7 +39,7 @@ function AddProcessFromDailySchedule() {
                 process_list.push(process);
             }
 
-            chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
+            chrome.storage.sync.set({'twitter_capture_process': process_list}, function () {
                 console.log("Capture Process Added From Daily Schedule Successfully!");
             });
         });
@@ -46,47 +47,75 @@ function AddProcessFromDailySchedule() {
 }
 
 function StartProcess() {
-    chrome.storage.sync.get('twitter_capture_process', function(result) {
+    chrome.storage.sync.get('twitter_capture_process', function (result) {
         var process_list = result['twitter_capture_process'];
         if (!process_list || process_list.length == 0) {
             return;
         }
 
-        var process = process_list[0];
+        chrome.storage.sync.get('twitter_capture_payment_id', function (result) {
+            var sessionId = result['twitter_capture_payment_id'];
+            if (sessionId) {
+                fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
+                    .then(function (result) {
+                        return result.json();
+                    })
+                    .then(function (reply) {
+                        if (reply.status == "success" && reply.data.payment_status == "paid") {
+                            /************************************ START PROCESS ***********************************/
+                            var process = process_list[0];
 
-        var process_id = process.id;
-        var account_name = process.account_name;
-        var layout_index = process.layout_index;
-        var from_date = process.from_date;
-        var until_date = process.until_date;
+                            var process_id = process.id;
+                            var account_name = process.account_name;
+                            var layout_index = process.layout_index;
+                            var from_date = process.from_date;
+                            var until_date = process.until_date;
 
-        process['status'] = "Processing";
-        process_list[0] = process;
+                            process['status'] = "Processing";
+                            process_list[0] = process;
 
-        chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
-            var searchUrl = "https://twitter.com/search?q=from:" + account_name + "%20since:" + from_date + "%20until:" + until_date + "&src=typed_query&f=live";
-            chrome.windows.create({ url: searchUrl, width: 200, height: 165, focused: false }, window => {
-                PROCESS_STATUS = 1;
-                CURRENT_PROCESS_ID = process_id;
-                var payload = {
-                    command: "StartCapture",
-                    process_id: process_id,
-                    user_id: account_name,
-                    from_date: from_date,
-                    to_date: until_date,
-                    layout_index: layout_index
-                }
-                setTimeout(function() {
-                    chrome.tabs.sendMessage(window.tabs[0].id, payload);
-                    console.log(`Started New Process Successfully! ID: ${CURRENT_PROCESS_ID}`);
-                }, 3000);
-            });
+                            chrome.storage.sync.set({'twitter_capture_process': process_list}, function () {
+                                var searchUrl = "https://twitter.com/search?q=from:" + account_name + "%20since:" + from_date + "%20until:" + until_date + "&src=typed_query&f=live";
+                                chrome.windows.create({
+                                    url: searchUrl,
+                                    width: 200,
+                                    height: 165,
+                                    focused: false
+                                }, window => {
+                                    PROCESS_STATUS = 1;
+                                    CURRENT_PROCESS_ID = process_id;
+                                    var payload = {
+                                        command: "StartCapture",
+                                        process_id: process_id,
+                                        user_id: account_name,
+                                        from_date: from_date,
+                                        to_date: until_date,
+                                        layout_index: layout_index
+                                    }
+                                    setTimeout(function () {
+                                        chrome.tabs.sendMessage(window.tabs[0].id, payload);
+                                        console.log(`Started New Process Successfully! ID: ${CURRENT_PROCESS_ID}`);
+                                    }, 3000);
+                                });
+                            });
+                            /************************************* END PROCESS **********************************/
+                        } else {
+                            removeAllProcess();
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log('Error when fetching Checkout session', err);
+                        removeAllProcess();
+                    });
+            } else {
+                removeAllProcess();
+            }
         });
     });
 }
 
 function removeProcess(id) {
-    chrome.storage.sync.get('twitter_capture_process', function(result) {
+    chrome.storage.sync.get('twitter_capture_process', function (result) {
         var process_list = result['twitter_capture_process'];
         if (!process_list) {
             return;
@@ -97,9 +126,15 @@ function removeProcess(id) {
                 process_list.splice(i, 1);
             }
         }
-        chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
+        chrome.storage.sync.set({'twitter_capture_process': process_list}, function () {
             console.log("Process Removed Successfully!");
         });
+    });
+}
+
+function removeAllProcess() {
+    chrome.storage.sync.set({'twitter_capture_process': []}, function () {
+        console.log("Total Process Removed Successfully!");
     });
 }
 
@@ -109,7 +144,23 @@ setInterval(() => {
 
     var currentDate = new Date();
     if (currentDate.getHours() == 1 && currentDate.getMinutes() == 0 && currentDate.getSeconds() >= 0 && currentDate.getSeconds() < 10) {
-        AddProcessFromDailySchedule();
+        chrome.storage.sync.get('twitter_capture_payment_id', function (result) {
+            var sessionId = result['twitter_capture_payment_id'];
+            if (sessionId) {
+                fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
+                    .then(function (result) {
+                        return result.json();
+                    })
+                    .then(function (reply) {
+                        if (reply.status == "success" && reply.data.payment_status == "paid") {
+                            AddProcessFromDailySchedule();
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log('Error when fetching Checkout session', err);
+                    });
+            }
+        });
     }
 
     if (PROCESS_STATUS == 0) {
@@ -119,9 +170,9 @@ setInterval(() => {
     console.log(currentDate);
 }, 10000);
 
-chrome.runtime.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function (port) {
     if (port.name == "Process_Connection") {
-        port.onMessage.addListener(function(msg) {
+        port.onMessage.addListener(function (msg) {
             if (msg.ping == "Ping_Packet") {
                 PING_COUNT++;
             }

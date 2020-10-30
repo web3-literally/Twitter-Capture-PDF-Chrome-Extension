@@ -17,16 +17,34 @@
             margin-right: auto;
             min-width: 150px;
         }
+
+        #btn-confirm-payment {
+            margin-left: auto;
+            margin-right: auto;
+            min-width: 150px;
+        }
         
         .input-warning,
         .input-information {
             font-size: medium;
         }
-        
+
+        .loading-panel{
+            text-align: center;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
         .account-detail {
             padding: 15px;
             border-right: solid 1px #CDCDCD;
             font-size: small;
+        }
+
+        .payment-detail {
+            padding: 15px;
+            border-right: solid 1px #CDCDCD;
+            text-align: center;
+            color: #6FD4C5;
         }
         
         .shedule-list {
@@ -87,6 +105,10 @@
         .remove-daily-account {
             font-size: x-small !important;
         }
+
+        .logo-content{
+            text-align: center;
+        }
     </style>
 
     <link rel="stylesheet" href="resources/bootstrap/css/bootstrap.min.css">
@@ -99,7 +121,28 @@
 <body>
     <div class="container">
         <div class="row">
-            <div class="col-5 account-detail">
+            <div class="col-5 loading-panel">
+                <img src="resources/images/loading.gif">
+            </div>
+
+            <div class="col-5 payment-detail d-none">
+                <div class="mt-3">
+                    <h4>Payment Confirm</h4>
+                    <div class="logo-content my-4">
+                        <img src="resources/images/icon.png">
+                    </div>
+                    <strong>Please Input Payment ID</strong>
+                    <input type="text" class="w-100 rcorners my-2  color-gray" placeholder="Payment ID" id="payment-id">
+                </div>
+                <div class="payment-warning d-none mt-3">
+                    <p class="alert-danger">Please input payment ID correctly.</p>
+                </div>
+                <div class="row mt-4">
+                    <button class="btn btn-sm btn-info" id="btn-confirm-payment">Confirm Payment</button>
+                </div>
+            </div>
+
+            <div class="col-5 account-detail d-none">
                 <div class="mt-3">
                     <strong>Account Name</strong>
                     <input type="text" class="w-100 rcorners mt-1  color-gray" placeholder="Account Name" id="account-name">
@@ -153,6 +196,7 @@
                     <button class="btn btn-sm btn-info" id="btn-add">Add</button>
                 </div>
             </div>
+
             <div class="col-7 shedule-list container">
                 <ul class="nav nav-tabs">
                     <li class="w-50"><button class="btn btn-sm btn-outline-info w-100 active" data-toggle="tab" href="#process">Process</button></li>

@@ -1,9 +1,11 @@
 'use strict';
 
+var PAYMENT_URL = "http://localhost:4242";
+
 function showWarning(strMsg) {
     $('.input-warning').removeClass('d-none');
     $('.input-warning p').html(strMsg);
-    setTimeout(function() {
+    setTimeout(function () {
         hideWarning();
     }, 3000);
 }
@@ -12,10 +14,22 @@ function hideWarning() {
     $('.input-warning').addClass('d-none');
 }
 
+function showPaymentWarning(strMsg) {
+    $('.payment-warning').removeClass('d-none');
+    $('.payment-warning p').html(strMsg);
+    setTimeout(function () {
+        hidePaymentWarning();
+    }, 3000);
+}
+
+function hidePaymentWarning() {
+    $('.input-warning').addClass('d-none');
+}
+
 function showInformation(strMsg) {
     $('.input-information').removeClass('d-none');
     $('.input-information p').html(strMsg);
-    setTimeout(function() {
+    setTimeout(function () {
         hideInformation();
     }, 3000);
 }
@@ -26,7 +40,7 @@ function hideInformation() {
 
 
 function add_daily_account(account_name, layout_index) {
-    chrome.storage.sync.get('twitter_capture_daily_account', function(result) {
+    chrome.storage.sync.get('twitter_capture_daily_account', function (result) {
         var daily_account_list = result['twitter_capture_daily_account'];
         if (!daily_account_list) {
             daily_account_list = [];
@@ -38,7 +52,7 @@ function add_daily_account(account_name, layout_index) {
             lastest_capture: null
         }
         daily_account_list.push(daily_account);
-        chrome.storage.sync.set({ 'twitter_capture_daily_account': daily_account_list }, function() {
+        chrome.storage.sync.set({'twitter_capture_daily_account': daily_account_list}, function () {
             refresh_daily_account_table();
             showInformation("Daily Schedule Added Successfully!");
         });
@@ -46,7 +60,7 @@ function add_daily_account(account_name, layout_index) {
 }
 
 function add_process(account_name, from_date, until_date, layout_index) {
-    chrome.storage.sync.get('twitter_capture_process', function(result) {
+    chrome.storage.sync.get('twitter_capture_process', function (result) {
         var process_list = result['twitter_capture_process'];
         if (!process_list) {
             process_list = [];
@@ -60,7 +74,7 @@ function add_process(account_name, from_date, until_date, layout_index) {
             status: "Waiting"
         }
         process_list.push(process);
-        chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
+        chrome.storage.sync.set({'twitter_capture_process': process_list}, function () {
             refresh_process_table();
             showInformation("Capture Process Added Successfully!");
         });
@@ -68,7 +82,7 @@ function add_process(account_name, from_date, until_date, layout_index) {
 }
 
 function refresh_daily_account_table() {
-    chrome.storage.sync.get('twitter_capture_daily_account', function(result) {
+    chrome.storage.sync.get('twitter_capture_daily_account', function (result) {
         var daily_account_list = result['twitter_capture_daily_account'];
         if (!daily_account_list) {
             daily_account_list = [];
@@ -84,7 +98,7 @@ function refresh_daily_account_table() {
             $('#daily-account-content').append(daily_account_html);
         }
 
-        $('.remove-daily-account').click(function() {
+        $('.remove-daily-account').click(function () {
             var id = $(this).attr('data-id');
             removeDailyAccount(id);
         });
@@ -92,7 +106,7 @@ function refresh_daily_account_table() {
 }
 
 function refresh_process_table() {
-    chrome.storage.sync.get('twitter_capture_process', function(result) {
+    chrome.storage.sync.get('twitter_capture_process', function (result) {
         var process_list = result['twitter_capture_process'];
         if (!process_list) {
             process_list = [];
@@ -109,7 +123,7 @@ function refresh_process_table() {
             $('#process-content').append(process_html);
         }
 
-        $('.remove-process').click(function() {
+        $('.remove-process').click(function () {
             var id = $(this).attr('data-id');
             removeProcess(id);
         });
@@ -117,7 +131,7 @@ function refresh_process_table() {
 }
 
 function removeDailyAccount(id) {
-    chrome.storage.sync.get('twitter_capture_daily_account', function(result) {
+    chrome.storage.sync.get('twitter_capture_daily_account', function (result) {
         var daily_account_list = result['twitter_capture_daily_account'];
         if (!daily_account_list) {
             return;
@@ -128,7 +142,7 @@ function removeDailyAccount(id) {
                 daily_account_list.splice(i, 1);
             }
         }
-        chrome.storage.sync.set({ 'twitter_capture_daily_account': daily_account_list }, function() {
+        chrome.storage.sync.set({'twitter_capture_daily_account': daily_account_list}, function () {
             refresh_daily_account_table();
             showInformation("Daily Schedule Removed Successfully!");
         });
@@ -136,7 +150,7 @@ function removeDailyAccount(id) {
 }
 
 function removeProcess(id) {
-    chrome.storage.sync.get('twitter_capture_process', function(result) {
+    chrome.storage.sync.get('twitter_capture_process', function (result) {
         var process_list = result['twitter_capture_process'];
         if (!process_list) {
             return;
@@ -147,24 +161,59 @@ function removeProcess(id) {
                 process_list.splice(i, 1);
             }
         }
-        chrome.storage.sync.set({ 'twitter_capture_process': process_list }, function() {
+        chrome.storage.sync.set({'twitter_capture_process': process_list}, function () {
             refresh_process_table();
             showInformation("Process Removed Successfully!");
         });
     });
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
+    chrome.storage.sync.get('twitter_capture_payment_id', function (result) {
+        var sessionId = result['twitter_capture_payment_id'];
+        if (sessionId) {
+            fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
+                .then(function (result) {
+                    return result.json();
+                })
+                .then(function (reply) {
+                    if (reply.status == "success" && reply.data.payment_status == "paid") {
+                        $('.loading-panel').addClass('d-none');
+                        $('.payment-detail').addClass('d-none');
+                        $('.account-detail').removeClass('d-none');
+                    } else {
+                        $('.loading-panel').addClass('d-none');
+                        $('.payment-detail').removeClass('d-none');
+                        $('.account-detail').addClass('d-none');
+                        chrome.tabs.create({url: PAYMENT_URL, active: false});
+                    }
+                })
+                .catch(function (err) {
+                    console.log('Error when fetching Checkout session', err);
+                    $('.loading-panel').addClass('d-none');
+                    $('.payment-detail').removeClass('d-none');
+                    $('.account-detail').addClass('d-none');
+                    chrome.tabs.create({url: PAYMENT_URL, active: false});
+                });
+        } else {
+            $('.loading-panel').addClass('d-none');
+            $('.payment-detail').removeClass('d-none');
+            $('.account-detail').addClass('d-none');
+            chrome.tabs.create({url: PAYMENT_URL, active: false});
+        }
+    });
+
+
     refresh_daily_account_table();
     refresh_process_table();
 
-    $('.pdf-layout').click(function() {
+    $('.pdf-layout').click(function () {
         $('.active-layout').removeClass('active-layout');
         $(this).addClass('active-layout');
         $('#layout-index').val($(this).attr('layout-index'));
     })
 
-    $('#btn-add').click(function() {
+    $('#btn-add').click(function () {
         var account_name = $('#account-name').val();
         var from_date = $('#from-date').val();
         var until_date = $('#until-date').val();
@@ -198,7 +247,7 @@ $(document).ready(function() {
         $('#account-name').val("");
     });
 
-    $('#auto-capture').change(function() {
+    $('#auto-capture').change(function () {
         if (this.checked) {
             $('#period').hide();
         } else {
@@ -206,4 +255,31 @@ $(document).ready(function() {
         }
     });
 
+    $('#btn-confirm-payment').click(function () {
+        var sessionId = $('#payment-id').val();
+
+        if (sessionId) {
+            fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
+                .then(function (result) {
+                    return result.json();
+                })
+                .then(function (reply) {
+                    if (reply.status == "success" && reply.data.payment_status == "paid") {
+                        chrome.storage.sync.set({'twitter_capture_payment_id': sessionId}, function () {
+                            $('.loading-panel').addClass('d-none');
+                            $('.payment-detail').addClass('d-none');
+                            $('.account-detail').removeClass('d-none');
+                        });
+                    } else {
+                        showPaymentWarning('Please input payment ID correctly.');
+                    }
+                })
+                .catch(function (err) {
+                    console.log('Error when fetching Checkout session', err)
+                    showPaymentWarning('Please input payment ID correctly.');
+                });
+        } else {
+            showPaymentWarning('Please input payment ID correctly.');
+        }
+    });
 });

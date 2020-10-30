@@ -1,10 +1,13 @@
 {
     "name": "Twitter Capture",
     "description": "Capture Tweet for users and export with pdf document.",
-    "version": "1.0",
+    "version": "1.2",
+    "manifest_version": 2,
+
     "permissions": [
         "tabs",
-        "storage"
+        "storage",
+        "http://localhost:4242/"
     ],
     "browser_action": {
         "default_title": "Twitter Capture.",
@@ -27,7 +30,6 @@
         "48": "resources/images/icon.png",
         "128": "resources/images/icon.png"
     },
-    "manifest_version": 2,
     "content_scripts": [{
         "all_frames": false,
         "js": [
