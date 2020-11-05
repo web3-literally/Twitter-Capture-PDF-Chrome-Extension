@@ -23,6 +23,8 @@ function AddProcessFromDailySchedule() {
 
                 var account_name = daily_account.account_name;
                 var layout_index = daily_account.layout_index;
+
+                currentDate.setDate(currentDate.getDate() - 1);
                 var until_date = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
                 currentDate.setDate(currentDate.getDate() - 1);
                 var from_date = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
@@ -142,32 +144,41 @@ setInterval(() => {
     if (PING_COUNT == 0) PROCESS_STATUS = 0;
     PING_COUNT = 0;
 
-    var currentDate = new Date();
-    if (currentDate.getHours() == 1 && currentDate.getMinutes() == 0 && currentDate.getSeconds() >= 0 && currentDate.getSeconds() < 10) {
-        chrome.storage.sync.get('twitter_capture_payment_id', function (result) {
-            var sessionId = result['twitter_capture_payment_id'];
-            if (sessionId) {
-                fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
-                    .then(function (result) {
-                        return result.json();
-                    })
-                    .then(function (reply) {
-                        if (reply.status == "success" && reply.data.payment_status == "paid") {
-                            AddProcessFromDailySchedule();
-                        }
-                    })
-                    .catch(function (err) {
-                        console.log('Error when fetching Checkout session', err);
-                    });
-            }
-        });
-    }
+    chrome.storage.sync.get('daily_process_latest_day', function (result) {
+        var nDay = result['daily_process_latest_day'];
+        var currentDate = new Date();
+
+        // console.log(nDay);
+        // console.log(currentDate);
+
+        if (!nDay || nDay != currentDate.getDate()) {
+            chrome.storage.sync.get('twitter_capture_payment_id', function (result) {
+                var sessionId = result['twitter_capture_payment_id'];
+                if (sessionId) {
+                    fetch(PAYMENT_URL + '/checkout-session?sessionId=' + sessionId)
+                        .then(function (result) {
+                            return result.json();
+                        })
+                        .then(function (reply) {
+                            if (reply.status == "success" && reply.data.payment_status == "paid") {
+                                AddProcessFromDailySchedule();
+                            }
+                        })
+                        .catch(function (err) {
+                            console.log('Error when fetching Checkout session', err);
+                        });
+                }
+            });
+            chrome.storage.sync.set({'daily_process_latest_day': currentDate.getDate()});
+        }
+    });
+    // if (currentDate.getHours() == 1 && currentDate.getMinutes() == 0 && currentDate.getSeconds() >= 0 && currentDate.getSeconds() < 10) {
+    //
+    // }
 
     if (PROCESS_STATUS == 0) {
         StartProcess();
     }
-
-    console.log(currentDate);
 }, 10000);
 
 chrome.runtime.onConnect.addListener(function (port) {
